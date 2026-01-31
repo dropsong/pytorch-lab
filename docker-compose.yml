@@ -1,0 +1,20 @@
+services:
+  dl-lab:
+    build: .
+    container_name: zhiyue-pytorch
+    # 关键：启用 GPU 支持
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    # 共享内存设置：PyTorch DataLoader 需要较大的共享内存，否则会报错
+    shm_size: '8gb'
+    volumes:
+      - ./workspace:/workspace
+    ports:
+      - "8888:8888"
+    tty: true
+    restart: unless-stopped
