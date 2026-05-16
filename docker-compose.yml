@@ -12,6 +12,7 @@ services:
               capabilities: [gpu]
     # 共享内存设置：PyTorch DataLoader 需要较大的共享内存，否则会报错
     shm_size: '8gb'
+    working_dir: /workspace
     volumes:
       - ./workspace:/workspace
     ports:

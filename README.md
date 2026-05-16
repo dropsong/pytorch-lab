@@ -4,11 +4,9 @@
 
 # 环境配置
 
-先过一下配置（何意味？）：
+先过一下我电脑的配置：
 
 ```bash
-OS: Debian GNU/Linux forky/sid (forky) x86_64
-Kernel: Linux 6.18.5+deb14-amd64
 CPU: 13th Gen Intel(R) Core(TM) i7-13650HX (20) @ 4.90 GHz
 GPU 1: NVIDIA GeForce RTX 5060 Max-Q / Mobile [Discrete]
 GPU 2: Intel Raptor Lake-S UHD Graphics @ 1.55 GHz [Integrated]
@@ -18,14 +16,14 @@ Swap: 48.00 KiB / 13.21 GiB (0%)
 
 ```bash
 +-----------------------------------------------------------------------------------------+
-| NVIDIA-SMI 580.126.09             Driver Version: 580.126.09     CUDA Version: 13.0     |
+| NVIDIA-SMI 595.71.05              Driver Version: 595.71.05      CUDA Version: 13.2     |
 +-----------------------------------------+------------------------+----------------------+
 | GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
 | Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
 |                                         |                        |               MIG M. |
 |=========================================+========================+======================|
 |   0  NVIDIA GeForce RTX 5060 ...    Off |   00000000:01:00.0  On |                  N/A |
-| N/A   41C    P8              3W /   55W |      52MiB /   8151MiB |      0%      Default |
+| N/A   47C    P8              9W /   55W |      70MiB /   8151MiB |      2%      Default |
 |                                         |                        |                  N/A |
 +-----------------------------------------+------------------------+----------------------+
 
@@ -34,8 +32,8 @@ Swap: 48.00 KiB / 13.21 GiB (0%)
 |  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
 |        ID   ID                                                               Usage      |
 |=========================================================================================|
-|    0   N/A  N/A            1534      G   /usr/lib/xorg/Xorg                        2MiB |
-|    0   N/A  N/A            1783      G   /usr/bin/kwin_wayland                     2MiB |
+|    0   N/A  N/A            3265      G   /usr/lib/xorg/Xorg                        4MiB |
+|    0   N/A  N/A            3532      G   /usr/bin/kwin_wayland                     2MiB |
 +-----------------------------------------------------------------------------------------+
 ```
 
@@ -63,22 +61,54 @@ sudo systemctl restart docker
 
 # 运行与测试
 
-启动环境： 在本目录下运行：
+推荐使用 `make` 作为日常入口。底层仍然是 `docker compose`，只是命令更短一些。
+
+构建并后台启动 Jupyter Lab 容器：
 
 ```bash
-docker compose up -d --build
+make up
 ```
 
-查看日志 (获取 Jupyter 地址)：
+查看日志，获取 Jupyter 地址：
 
 ```bash
-docker compose logs -f
+make logs
 ```
 
-执行测试：
+进入容器内的 `/workspace` 目录：
 
 ```bash
-docker exec -it zhiyue-pytorch python test_gpu.py
+make shell
+```
+
+进入容器后，终端提示符会类似 `root@<container_id>:/workspace#`。此时可以直接运行：
+
+```bash
+python test_gpu.py
+```
+
+`workspace/` 会实时同步到容器里的 `/workspace`：
+
+- `ipynb` 文件可以通过 Jupyter Lab 打开和运行。
+- 普通 Python 脚本、模块和实验代码也放在 `workspace/` 下。
+- 在本地编辑文件后，容器内会立即看到修改，不需要重新构建镜像。
+
+也可以不进入容器，直接从宿主机运行 GPU 测试：
+
+```bash
+make test-gpu
+```
+
+对应的原生 Docker Compose 命令是：
+
+```bash
+docker compose exec dl-lab python test_gpu.py
+```
+
+停止并移除容器：
+
+```bash
+make down
 ```
 
 得到输出：
@@ -104,4 +134,3 @@ Data allocation time: 0.1096s
 Computation time: 0.1193s
 Test Complete. GPU is working correctly.
 ```
-
